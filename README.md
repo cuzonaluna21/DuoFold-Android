@@ -1,5 +1,11 @@
 # DuoFold for Android
 
+[![Android](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)](https://github.com/jcx396905-gif/DuoFold)
+[![Shizuku](https://img.shields.io/badge/Shizuku-required-7C4DFF)](https://github.com/RikkaApps/Shizuku)
+[![Release](https://img.shields.io/github/v/release/jcx396905-gif/DuoFold?display_name=tag)](https://github.com/jcx396905-gif/DuoFold/releases/latest)
+[![License](https://img.shields.io/github/license/jcx396905-gif/DuoFold)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/jcx396905-gif/DuoFold?style=flat)](https://github.com/jcx396905-gif/DuoFold/stargazers)
+
 **A system-wide iPhone Duo-style folding illusion for regular Android phones — no foldable hardware and no root required.**
 
 DuoFold turns the entire Android display into a motion-driven spatial surface. As you tilt your phone left/right or forward/backward, the current screen is reprojected in real time with perspective, translation, blur, lighting, and depth effects. The motion pauses when the phone stops and reverses naturally when you tilt it back.
