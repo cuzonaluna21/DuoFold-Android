@@ -12,6 +12,13 @@
 
 ▶ [播放演示切片（约 6 秒）](https://github.com/jcx396905-gif/DuoFold/releases/download/v0.3.1/DuoFold-demo-clip.mp4)
 
+## 软件截图
+
+<p align="center">
+  <img src="media/app-setup.jpg" width="320" alt="Duo Fold 开启步骤">
+  <img src="media/app-settings.jpg" width="320" alt="Duo Fold 参数设置与作者入口">
+</p>
+
 ## 下载
 
 从 [Latest Release](https://github.com/jcx396905-gif/DuoFold/releases/latest) 下载 `DuoFold-0.3.1.apk`。
