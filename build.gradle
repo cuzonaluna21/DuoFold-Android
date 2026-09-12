@@ -1,0 +1,5 @@
+plugins { id 'com.android.application' version '8.11.1' apply false }
+allprojects {
+    tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+    tasks.withType(Test).configureEach { jvmArgs '-Dfile.encoding=UTF-8' }
+}
