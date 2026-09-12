@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -38,13 +39,22 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         prefs=getSharedPreferences("duo",0);client=BridgeClient.get(this);
-        if(prefs.getInt("motionVersion",0)<2) prefs.edit().putInt("motionVersion",2).putFloat("range",80).putFloat("intensity",1).apply();
+        int motionVersion=prefs.getInt("motionVersion",0);
+        if(motionVersion<3) {
+            SharedPreferences.Editor migration=prefs.edit().putInt("motionVersion",3).putBoolean("zAxis",false);
+            if(motionVersion<2)migration.putFloat("range",80).putFloat("intensity",1);
+            migration.apply();
+        }
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
         LinearLayout body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setPadding(dp(24),dp(18),dp(24),dp(28));
         scroll.addView(body);setContentView(scroll);
         scroll.setOnApplyWindowInsetsListener((v,insets)-> {
-            android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars());
-            v.setPadding(bars.left,bars.top,bars.right,bars.bottom);return insets;
+            if(Build.VERSION.SDK_INT>=30) {
+                android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars());
+                v.setPadding(bars.left,bars.top,bars.right,bars.bottom);
+            } else v.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),
+                    insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());
+            return insets;
         });
         LinearLayout setup=card(body);
         setup.addView(text("开启步骤",22,FG));
@@ -63,7 +73,9 @@ public final class MainActivity extends Activity {
         button(setup,"重新校准当前握姿",()-> {
             FoldService s=FoldService.current();if(s!=null && s.isActive()) {s.calibrate();Toast.makeText(this,"已校准",Toast.LENGTH_SHORT).show();}
         },false);
-        add(setup,text("三指同时触屏或使用通知栏按钮，随时停止效果。",12,ACCENT),12,0);
+        add(setup,text(Build.VERSION.SDK_INT>=34
+                ?"三指同时触屏或使用通知栏按钮，随时停止效果。"
+                :"使用通知栏按钮，随时停止效果。",12,ACCENT),12,0);
 
         LinearLayout tuning=card(body);
         tuning.addView(text("调到舒服的手感",19,FG));
@@ -100,7 +112,7 @@ public final class MainActivity extends Activity {
         start.setEnabled(active || s!=null && client.service()!=null);
     }
     private void requestStart(boolean isTrial) {
-        if(checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED) {
+        if(Build.VERSION.SDK_INT>=33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED) {
             pendingStart=true;pendingTrial=isTrial;requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},51);return;
         }
         startSession(isTrial);

@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -59,7 +60,9 @@ public final class FoldService extends AccessibilityService {
     @Override protected void onServiceConnected() {
         instance=this;wm=getSystemService(WindowManager.class);client=BridgeClient.get(this);
         client.addObserver(bridgeChanged);client.connect();setIntercept(false);
-        registerReceiver(screenOff,new IntentFilter(Intent.ACTION_SCREEN_OFF),Context.RECEIVER_NOT_EXPORTED);
+        if(Build.VERSION.SDK_INT>=33)
+            registerReceiver(screenOff,new IntentFilter(Intent.ACTION_SCREEN_OFF),Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(screenOff,new IntentFilter(Intent.ACTION_SCREEN_OFF));
     }
     public boolean isActive() { return active; }
     public String status() { return status; }
@@ -113,19 +116,32 @@ public final class FoldService extends AccessibilityService {
             @Override public void onReady(Surface surface,int w,int h) {
                 if(active && overlayGeneration==generation) beginCapture(surface,w,h);
             }
+            @Override public void onFirstFrame() {
+                if(Build.VERSION.SDK_INT<31 && active && overlayGeneration==generation && !captureReady) {
+                    captureReady=true;
+                    if(view!=null)view.setAlpha(1f);
+                    status=runningStatus();
+                }
+            }
             @Override public void onError(String message) {
                 if(overlayGeneration==generation) stopSession(message);
             }
         });
+        int flags=WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                |WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
         WindowManager.LayoutParams lp=new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        |WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                flags,
                 PixelFormat.TRANSLUCENT);
         lp.gravity=Gravity.TOP|Gravity.START;lp.setTitle("Duo Fold optical layer");
-        lp.layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-        lp.setFitInsetsTypes(0);
+        lp.layoutInDisplayCutoutMode=Build.VERSION.SDK_INT>=30
+                ?WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                :WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        if(Build.VERSION.SDK_INT>=30)lp.setFitInsetsTypes(0);
+        // Android 10/11 cannot exclude an individual SurfaceControl from a display capture.
+        // Keep the optical layer transparent until its one clean source frame has arrived.
+        if(Build.VERSION.SDK_INT<31)view.setAlpha(0f);
         wm.addView(view,lp);
     }
     private void beginCapture(Surface surface,int w,int h) {
@@ -136,6 +152,7 @@ public final class FoldService extends AccessibilityService {
         Bundle options=new Bundle();options.putParcelable("exclude",exclude);
         options.putInt("width",w);options.putInt("height",h);options.putInt("fps",30);
         options.putInt("displayWidth",view.getWidth());options.putInt("displayHeight",view.getHeight());
+        options.putInt("rotation",view.getDisplay()==null?Surface.ROTATION_0:view.getDisplay().getRotation());
         int session=generation;
         io.execute(()-> {
             try {
@@ -146,7 +163,10 @@ public final class FoldService extends AccessibilityService {
                         main.post(()-> {
                             if(!active || session!=generation) return;
                             lastFrame=SystemClock.uptimeMillis();frames=sequence;
-                            if(!captureReady) {captureReady=true;setIntercept(true);status="运行中 · 三指同时触屏可退出";}
+                            if(Build.VERSION.SDK_INT>=31 && !captureReady) {
+                                captureReady=true;
+                                setIntercept(true);status=runningStatus();
+                            }
                         });
                     }
                     @Override public void onError(String message) {main.post(()->{if(session==generation) stopSession(message);});}
@@ -159,7 +179,8 @@ public final class FoldService extends AccessibilityService {
             if(!active) return;
             long now=SystemClock.uptimeMillis();
             if(trialEnd>0 && now>=trialEnd) {stopSession("10 秒体验结束，已恢复原始屏幕");return;}
-            if((lastFrame>0 && now-lastFrame>1500) || (lastFrame==0 && now-started>5000)) {
+            boolean liveCapture=Build.VERSION.SDK_INT>=31;
+            if((liveCapture && lastFrame>0 && now-lastFrame>1500) || (lastFrame==0 && now-started>5000)) {
                 stopSession("画面更新超时，已恢复原始屏幕");return;
             }
             IFoldBridge bridge=client.service();
@@ -206,6 +227,7 @@ public final class FoldService extends AccessibilityService {
         });
     }
     private void setIntercept(boolean enabled) {
+        if(Build.VERSION.SDK_INT<34) {intercepting=false;return;}
         AccessibilityServiceInfo info=getServiceInfo();
         if(info==null) return;
         info.setMotionEventSources(enabled?InputDevice.SOURCE_TOUCHSCREEN:0);
@@ -258,8 +280,12 @@ public final class FoldService extends AccessibilityService {
         PendingIntent stop=PendingIntent.getBroadcast(this,1,new Intent(this,StopReceiver.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         PendingIntent open=PendingIntent.getActivity(this,2,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         Notification notification=new Notification.Builder(this,"duo_live").setSmallIcon(R.drawable.ic_fold)
-                .setContentTitle("Duo Fold 正在运行").setContentText("倾斜手机展开 · 三指触屏退出")
+                .setContentTitle("Duo Fold 正在运行").setContentText(Build.VERSION.SDK_INT>=34
+                        ?"倾斜手机展开 · 三指触屏退出":"倾斜手机展开 · 点此返回或使用停止按钮")
                 .setOngoing(true).setContentIntent(open).addAction(new Notification.Action.Builder(null,"停止",stop).build()).build();
         nm.notify(81,notification);
+    }
+    private String runningStatus() {
+        return Build.VERSION.SDK_INT>=34?"运行中 · 三指同时触屏可退出":"运行中 · 使用通知栏按钮退出";
     }
 }

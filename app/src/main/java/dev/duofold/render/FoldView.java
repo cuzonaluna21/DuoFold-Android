@@ -7,6 +7,7 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.view.Surface;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -17,7 +18,11 @@ import javax.microedition.khronos.opengles.GL10;
 import dev.duofold.motion.FoldModel;
 
 public final class FoldView extends GLSurfaceView implements GLSurfaceView.Renderer {
-    public interface Listener { void onReady(Surface input,int width,int height); void onError(String message); }
+    public interface Listener {
+        void onReady(Surface input,int width,int height);
+        void onFirstFrame();
+        void onError(String message);
+    }
     private final Listener listener;
     private final FloatBuffer quad=ByteBuffer.allocateDirect(8*4).order(ByteOrder.nativeOrder()).asFloatBuffer();
     private final float[] matrix=new float[16];
@@ -27,6 +32,7 @@ public final class FoldView extends GLSurfaceView implements GLSurfaceView.Rende
     private Surface input;
     private int program,textureId,width,height;
     private volatile boolean newFrame,hasFrame;
+    private boolean firstFrameReported;
     private volatile boolean stopped;
     private volatile boolean saveDebugFrame;
     public void saveDebugFrame() {if(dev.duofold.BuildConfig.DEBUG){saveDebugFrame=true;requestRender();}}
@@ -94,6 +100,10 @@ public final class FoldView extends GLSurfaceView implements GLSurfaceView.Rende
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
             GLES20.glDisableVertexAttribArray(pos);
             drawnState=s;
+            if(!firstFrameReported) {
+                firstFrameReported=true;
+                post(listener::onFirstFrame);
+            }
             if(saveDebugFrame && dev.duofold.BuildConfig.DEBUG) {
                 saveDebugFrame=false;
                 ByteBuffer pixels=ByteBuffer.allocateDirect(width*height*4);
@@ -126,7 +136,11 @@ public final class FoldView extends GLSurfaceView implements GLSurfaceView.Rende
     private int location(String name) { return GLES20.glGetUniformLocation(program,name); }
     private void scalar(String name,float value) { GLES20.glUniform1f(location(name),value); }
     private String asset(String name) throws Exception {
-        try(InputStream in=getContext().getAssets().open(name)) { return new String(in.readAllBytes(),StandardCharsets.UTF_8); }
+        try(InputStream in=getContext().getAssets().open(name);ByteArrayOutputStream out=new ByteArrayOutputStream()) {
+            byte[] buffer=new byte[4096];int read;
+            while((read=in.read(buffer))!=-1)out.write(buffer,0,read);
+            return new String(out.toByteArray(),StandardCharsets.UTF_8);
+        }
     }
     private int compile(int type,String source) {
         int shader=GLES20.glCreateShader(type); GLES20.glShaderSource(shader,source); GLES20.glCompileShader(shader);

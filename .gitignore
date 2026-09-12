@@ -9,4 +9,5 @@ reference/
 dist/
 docs/
 release-assets/
+artifacts/
 *.MOV

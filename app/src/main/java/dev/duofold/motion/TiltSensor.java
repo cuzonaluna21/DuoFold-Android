@@ -17,10 +17,12 @@ public final class TiltSensor implements SensorEventListener {
     private final float range;
     private final boolean includeForward;
     private final float[] device=new float[9],screen=new float[9],reference=new float[9];
-    private Sensor attitude,gyro;
+    private Sensor attitude,gyro,acceleration;
+    private boolean accelerationOnly,accelerationReady;
     private boolean calibrated;
     private float filteredForward,filteredSide,forwardRate,sideRate;
-    private long previous,rateTime;
+    private float accelerationX,accelerationY,accelerationZ,referenceAccelerationForward,referenceAccelerationSide;
+    private long previous,rateTime,accelerationTime;
     private int lastRotation=-1;
     public TiltSensor(Context context,float range,boolean includeForward,Listener listener) {
         this.range=range;this.includeForward=includeForward;this.listener=listener;
@@ -30,16 +32,23 @@ public final class TiltSensor implements SensorEventListener {
     public boolean start() {
         attitude=manager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
         if(attitude==null)attitude=manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        if(attitude==null)return false;
+        if(attitude==null) {
+            acceleration=manager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+            if(acceleration==null)acceleration=manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            if(acceleration==null)return false;
+            accelerationOnly=true;
+            return manager.registerListener(this,acceleration,16667);
+        }
         boolean ok=manager.registerListener(this,attitude,8333);
         gyro=manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         if(ok&&gyro!=null)manager.registerListener(this,gyro,8333);
         return ok;
     }
-    public void calibrate() {calibrated=false;filteredForward=0;filteredSide=0;previous=0;}
+    public void calibrate() {calibrated=false;accelerationReady=false;filteredForward=0;filteredSide=0;previous=0;}
     public void stop() {manager.unregisterListener(this);}
     @Override public void onSensorChanged(SensorEvent event) {
         int orientation=windows.getDefaultDisplay().getRotation();
+        if(accelerationOnly&&event.sensor==acceleration) {onAcceleration(event,orientation);return;}
         if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE) {
             sideRate=switch(orientation) {
                 case Surface.ROTATION_90 -> -event.values[0];
@@ -75,8 +84,32 @@ public final class TiltSensor implements SensorEventListener {
         float[] measured=MotionAxes.resolve(side,forward,includeForward);
         float[] prediction=event.timestamp-rateTime<100_000_000L
                 ? MotionAxes.resolve(sideRate*.04f,forwardRate*.04f,includeForward) : new float[]{0,0};
-        float dt=Math.max(0,Math.min(.1f,(event.timestamp-previous)/1e9f));previous=event.timestamp;
-        float response=1-(float)Math.exp(-dt/.006922f);
+        emit(event.timestamp,measured,prediction,.006922f);
+    }
+    private void onAcceleration(SensorEvent event,int orientation) {
+        if(!accelerationReady) {
+            accelerationX=event.values[0];accelerationY=event.values[1];accelerationZ=event.values[2];
+            accelerationReady=true;accelerationTime=event.timestamp;
+        } else {
+            float dt=Math.max(0,Math.min(.1f,(event.timestamp-accelerationTime)/1e9f));accelerationTime=event.timestamp;
+            float response=1-(float)Math.exp(-dt/.08f);
+            accelerationX+=response*(event.values[0]-accelerationX);
+            accelerationY+=response*(event.values[1]-accelerationY);
+            accelerationZ+=response*(event.values[2]-accelerationZ);
+        }
+        float[] angles=GravityTilt.angles(accelerationX,accelerationY,accelerationZ,orientation);
+        if(!calibrated||orientation!=lastRotation) {
+            referenceAccelerationForward=angles[0];referenceAccelerationSide=angles[1];
+            calibrated=true;filteredForward=0;filteredSide=0;previous=event.timestamp;lastRotation=orientation;
+            listener.onTilt(1,0,0);return;
+        }
+        float forward=wrap(angles[0]-referenceAccelerationForward);
+        float side=wrap(angles[1]-referenceAccelerationSide);
+        emit(event.timestamp,MotionAxes.resolve(side,forward,includeForward),new float[]{0,0},.06f);
+    }
+    private void emit(long timestamp,float[] measured,float[] prediction,float responseTime) {
+        float dt=Math.max(0,Math.min(.1f,(timestamp-previous)/1e9f));previous=timestamp;
+        float response=1-(float)Math.exp(-dt/responseTime);
         filteredForward+=response*wrap(measured[0]+prediction[0]-filteredForward);
         filteredSide+=response*wrap(measured[1]+prediction[1]-filteredSide);
         float limit=Math.max(15,Math.min(80,range));
