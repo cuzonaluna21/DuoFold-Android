@@ -66,7 +66,8 @@ public final class BridgeClient {
                     Bundle probe=candidate.probe();
                     boolean ready=probe.getBoolean("captureApi") && probe.getBoolean("inputApi");
                     main.post(()-> {binding=false;bridge=ready?candidate:null;
-                        message=ready?"Shizuku 就绪 · UID "+probe.getInt("uid"):probe.getString("message");notifyObservers();});
+                        message=ready?"Shizuku 就绪 · UID "+probe.getInt("uid")+" · "+probe.getString("backend")
+                                :probe.getString("message");notifyObservers();});
                 } catch(Exception e) {main.post(()->{binding=false;message=e.toString();notifyObservers();});}
             });
         }

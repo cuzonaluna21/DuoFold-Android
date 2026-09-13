@@ -1,10 +1,10 @@
 # DuoFold for Android
 
-[![Android](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)](https://github.com/jcx396905-gif/DuoFold)
+[![Android](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)](https://github.com/jcx396905-gif/DuoFold-Android)
 [![Shizuku](https://img.shields.io/badge/Shizuku-required-7C4DFF)](https://github.com/RikkaApps/Shizuku)
-[![Release](https://img.shields.io/github/v/release/jcx396905-gif/DuoFold?display_name=tag)](https://github.com/jcx396905-gif/DuoFold/releases/latest)
-[![License](https://img.shields.io/github/license/jcx396905-gif/DuoFold)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/jcx396905-gif/DuoFold?style=flat)](https://github.com/jcx396905-gif/DuoFold/stargazers)
+[![Release](https://img.shields.io/github/v/release/jcx396905-gif/DuoFold-Android?display_name=tag)](https://github.com/jcx396905-gif/DuoFold-Android/releases/latest)
+[![License](https://img.shields.io/github/license/jcx396905-gif/DuoFold-Android)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/jcx396905-gif/DuoFold-Android?style=flat)](https://github.com/jcx396905-gif/DuoFold-Android/stargazers)
 
 **A system-wide iPhone Duo-style folding illusion for regular Android phones — no foldable hardware and no root required.**
 
@@ -14,31 +14,32 @@ DuoFold turns the entire Android display into a motion-driven spatial surface. A
 
 ## Demo
 
-<a href="https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-IMG-0019.mov"><img src="media/extra-demo-cover.jpg" width="360" alt="DuoFold latest real-device demo"></a>
+<a href="https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-IMG-0019.mov"><img src="media/extra-demo-cover.jpg" width="360" alt="DuoFold latest real-device demo"></a>
 
-▶ [Watch the latest real-device demo (~23 s)](https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-IMG-0019.mov)
+▶ [Watch the latest real-device demo (~23 s)](https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-IMG-0019.mov)
 
 ## More test videos
 
-<a href="https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-full-test.mp4"><img src="media/full-test-cover.jpg" width="360" alt="DuoFold full test video"></a>
+<a href="https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-full-test.mp4"><img src="media/full-test-cover.jpg" width="360" alt="DuoFold full test video"></a>
 
-▶ [Watch the full test video (~30 s)](https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-full-test.mp4)
+▶ [Watch the full test video (~30 s)](https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-full-test.mp4)
 
-<a href="https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-demo-clip.mp4"><img src="media/demo-clip-cover.jpg" width="360" alt="DuoFold short demo clip"></a>
+<a href="https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-demo-clip.mp4"><img src="media/demo-clip-cover.jpg" width="360" alt="DuoFold short demo clip"></a>
 
-▶ [Watch the short demo clip (~6 s)](https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-demo-clip.mp4)
+▶ [Watch the short demo clip (~6 s)](https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-demo-clip.mp4)
 
 ## Screenshots
 
 <p align="center">
   <img src="media/app-setup.jpg" width="320" alt="DuoFold setup screen">
   <img src="media/app-settings.jpg" width="320" alt="DuoFold settings and author screen">
+  <img src="media/app-effects.png" width="320" alt="DuoFold 0.6.0 animation effects">
 </p>
 
 ## Download
 
-- **Android 14 and newer:** download `DuoFold-0.4.0-Android14-and-newer.apk` from the [Latest Release](https://github.com/jcx396905-gif/DuoFold/releases/latest).
-- **Android 10–13:** use the compatibility APK from the [`android10-compat`](https://github.com/jcx396905-gif/DuoFold/tree/android10-compat) branch: [DuoFold-0.4.0-Android10-13.apk](https://raw.githubusercontent.com/jcx396905-gif/DuoFold/android10-compat/apk/DuoFold-0.4.0-Android10-13.apk). The compatibility build is not included in GitHub Releases.
+- **Android 14 and newer:** download `DuoFold-0.6.0-Android14-and-newer.apk` from the [Latest Release](https://github.com/jcx396905-gif/DuoFold-Android/releases/latest).
+- **Android 10–13:** download `DuoFold-0.6.0-Android10-13.apk` from the same [Latest Release](https://github.com/jcx396905-gif/DuoFold-Android/releases/latest).
 
 ## Features
 
@@ -49,16 +50,33 @@ DuoFold turns the entire Android display into a motion-driven spatial surface. A
 - Does not modify launcher layouts or third-party app UIs; the effect is rendered over whatever interface you are currently using.
 - On Android 14+, the effect can be stopped with a three-finger touch, the notification action, or by returning to DuoFold. The compatibility build uses the notification stop action.
 
+## Animation effects (v0.6.0)
+
+Choose a style in the app's **Animation effects** card. Changes are saved and applied immediately while the effect is running. **Classic Frosted** remains the default, and Z-axis sensing remains disabled by default in both Android builds.
+
+| Style | Tilt and hover behavior |
+| --- | --- |
+| Classic Frosted · default | Original distance blur, grain, and shading; the frosted appearance remains while the phone is still. |
+| Edge Fade | Keeps the anchored edge clearer while the opening edge gradually blurs and darkens. |
+| Soft Depth | Uses softer weighted sampling and lighter shading for a subtle glass depth effect. |
+| Hover Clear | Blurs during motion, then clears gradually after the phone has remained still for about half a second. |
+| Clear Projection | Keeps the folding perspective without added blur or shading. |
+| Lens Bokeh | Uses an independent 30° camera projection, a sharp near edge, quadratic far-edge blur, 16-tap disc bokeh, and continuous texture prefiltering. |
+
+The first five styles share the classic projection. **Lens Bokeh** uses independent two-axis edge rotation and camera projection; Android 14+ touch coordinates follow that projection. Horizontal tilt is capped at 60°, forward/back tilt at 80°, and **Spatial strength** controls the aperture intensity.
+
+Android 10/11 still use the static base frame captured when the effect starts; choosing another style does not make capture live on those versions.
+
 ## Requirements
 
-- The standard build requires Android 14 or newer. The compatibility branch supports Android 10 and newer.
+- The standard build requires Android 14 or newer. The compatibility build supports Android 10 and newer.
 - [Shizuku](https://github.com/RikkaApps/Shizuku) must be installed and running.
 - **No root required.**
 - Tested on **Xiaomi 15 / Android 16**. Screen-capture and overlay restrictions may vary between Android vendors.
 
 ## Setup
 
-1. On Android 14+, download the standard build from the [Latest Release](https://github.com/jcx396905-gif/DuoFold/releases/latest). On Android 10–13, download the compatibility build from the [`android10-compat`](https://github.com/jcx396905-gif/DuoFold/tree/android10-compat) branch.
+1. Download the matching build from the [Latest Release](https://github.com/jcx396905-gif/DuoFold-Android/releases/latest): use the standard build on Android 14+ and the compatibility build on Android 10–13.
 2. Open Shizuku and start its service using wireless debugging or ADB, following Shizuku's instructions.
 3. Open DuoFold and tap **01 Connect & authorize Shizuku**, then allow access in the authorization dialog.
 4. Tap **02 Enable screen-effect accessibility service**, find DuoFold, and enable the service.
@@ -72,6 +90,8 @@ If the accessibility service appears connected but the effect does not start, to
 ## How it works
 
 DuoFold uses Shizuku to access the current display image and passes it through local memory to an OpenGL ES renderer. The game rotation vector and gyroscope are used to calculate relative device pose. If those sensors are unavailable, the compatibility build falls back to the gravity sensor or accelerometer. The frame is reconstructed according to the current display orientation, and calibration updates automatically after portrait/landscape changes.
+
+The capture service detects AOSP and vendor ROM variants of `ScreenCapture`, `ScreenCaptureInternal`, and legacy `SurfaceControl`, then selects an available backend. This includes Android 16 custom ROMs where `getInternalDisplayToken()` is absent.
 
 Default parameters use an **80° maximum tilt angle**, **100% spatial strength**, **6–32 blur samples**, and **40 ms gyroscope prediction**. To limit power consumption, capture width is capped at **1080 px** and updates are capped at **30 FPS**.
 
@@ -117,31 +137,32 @@ Released under the MIT License. Third-party license notices are available at `ap
 
 ## 最新实机演示
 
-<a href="https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-IMG-0019.mov"><img src="media/extra-demo-cover.jpg" width="360" alt="Duo Fold 最新实机演示封面"></a>
+<a href="https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-IMG-0019.mov"><img src="media/extra-demo-cover.jpg" width="360" alt="Duo Fold 最新实机演示封面"></a>
 
-▶ [播放最新实机演示（约 23 秒）](https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-IMG-0019.mov)
+▶ [播放最新实机演示（约 23 秒）](https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-IMG-0019.mov)
 
 ## 更多测试视频
 
-<a href="https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-full-test.mp4"><img src="media/full-test-cover.jpg" width="360" alt="完整测试视频封面"></a>
+<a href="https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-full-test.mp4"><img src="media/full-test-cover.jpg" width="360" alt="完整测试视频封面"></a>
 
-▶ [播放完整测试视频（约 30 秒）](https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-full-test.mp4)
+▶ [播放完整测试视频（约 30 秒）](https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-full-test.mp4)
 
-<a href="https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-demo-clip.mp4"><img src="media/demo-clip-cover.jpg" width="360" alt="演示切片封面"></a>
+<a href="https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-demo-clip.mp4"><img src="media/demo-clip-cover.jpg" width="360" alt="演示切片封面"></a>
 
-▶ [播放演示切片（约 6 秒）](https://github.com/jcx396905-gif/DuoFold/releases/download/v0.4.0/DuoFold-demo-clip.mp4)
+▶ [播放演示切片（约 6 秒）](https://github.com/jcx396905-gif/DuoFold-Android/releases/download/v0.4.0/DuoFold-demo-clip.mp4)
 
 ## 软件截图
 
 <p align="center">
   <img src="media/app-setup.jpg" width="320" alt="Duo Fold 开启步骤">
   <img src="media/app-settings.jpg" width="320" alt="Duo Fold 参数设置与作者入口">
+  <img src="media/app-effects.png" width="320" alt="Duo Fold 0.6.0 动画效果选择">
 </p>
 
 ## 下载
 
-- **Android 14 及以上：**从 [Latest Release](https://github.com/jcx396905-gif/DuoFold/releases/latest) 下载 `DuoFold-0.4.0-Android14-and-newer.apk`。
-- **Android 10–13：**使用 [`android10-compat`](https://github.com/jcx396905-gif/DuoFold/tree/android10-compat) 分支提供的[兼容版 APK](https://raw.githubusercontent.com/jcx396905-gif/DuoFold/android10-compat/apk/DuoFold-0.4.0-Android10-13.apk)。兼容版不放入 GitHub Release。
+- **Android 14 及以上：**从 [Latest Release](https://github.com/jcx396905-gif/DuoFold-Android/releases/latest) 下载 `DuoFold-0.6.0-Android14-and-newer.apk`。
+- **Android 10–13：**从同一个 [Latest Release](https://github.com/jcx396905-gif/DuoFold-Android/releases/latest) 下载 `DuoFold-0.6.0-Android10-13.apk`。
 
 ## 功能
 
@@ -152,16 +173,33 @@ Released under the MIT License. Third-party license notices are available at `ap
 - 不修改桌面或第三方应用布局，可在当前正在使用的界面上显示效果。
 - Android 14+ 可用三指触屏、通知栏操作或返回 Duo Fold 停止效果；兼容版使用通知栏停止按钮。
 
+## 动画效果选择（0.6.0）
+
+在应用内的“动画效果”卡片中选择方案。选择自动保存，正在运行时也会立即应用；默认保持原有的经典磨砂。两种 Android 构建共用这些选项，Z 轴仍默认关闭。
+
+| 方案 | 倾斜与悬停表现 |
+| --- | --- |
+| 经典磨砂 · 默认 | 保留原有的距离模糊、颗粒和暗部，停住后保持磨砂。 |
+| 边缘渐隐 | 固定边缘更清楚，展开侧逐渐模糊、变暗，停住后保持渐变。 |
+| 柔和景深 | 柔和加权采样、较轻暗部，停住后保留轻微玻璃感。 |
+| 悬停清晰 | 移动时模糊，停住约半秒后逐渐清晰；保持透视位置，再次移动恢复模糊。 |
+| 清透投影 | 保留翻折透视，关闭磨砂和额外暗部。 |
+| 镜头散景 | 独立的 30° 镜头透视，近边清晰、远边按距离平方化开；16 点圆盘散景与连续纹理预过滤，悬停保持景深。 |
+
+前五个方案共用经典投影。“镜头散景”使用独立的双轴边缘旋转与镜头投影，Android 14+ 的触控坐标同步使用该投影；左右方向最多 60°、前后方向最多 80°，空间强度对应光圈强度。默认仍选中经典磨砂，切换后保存用户选择。
+
+Android 10/11 仍使用开启时取得的静态底图，选择其他动画不会使底图变成实时画面。
+
 ## 使用要求
 
-- 标准版需要 Android 14 或更高版本；兼容分支最低支持 Android 10。
+- 标准版需要 Android 14 或更高版本；兼容版最低支持 Android 10。
 - [Shizuku](https://github.com/RikkaApps/Shizuku) 已安装并运行。
 - 无需 Root。
 - 已在 Xiaomi 15、Android 16 上完成实机测试。其他厂商系统对屏幕捕获和悬浮层的限制可能不同。
 
 ## 使用教程
 
-1. Android 14 及以上从 [Latest Release](https://github.com/jcx396905-gif/DuoFold/releases/latest) 下载标准版；Android 10–13 从 [`android10-compat`](https://github.com/jcx396905-gif/DuoFold/tree/android10-compat) 分支下载兼容版。
+1. 从 [Latest Release](https://github.com/jcx396905-gif/DuoFold-Android/releases/latest) 下载对应版本：Android 14 及以上使用标准版，Android 10–13 使用兼容版。
 2. 打开 Shizuku，按其提示通过无线调试或电脑 ADB 启动服务。
 3. 打开 Duo Fold，点击“01 连接并授权 Shizuku”，在授权窗口中允许访问。
 4. 点击“02 开启屏幕效果辅助服务”，找到 Duo Fold 并启用服务。
@@ -175,6 +213,8 @@ Released under the MIT License. Third-party license notices are available at `ap
 ## 工作方式
 
 Duo Fold 通过 Shizuku 获取当前显示画面，在本机内存中交给 OpenGL ES 投影。游戏旋转矢量与陀螺仪用于计算相对姿态；没有这些传感器时，兼容版会使用重力计或加速度计。画面根据当前显示方向重建，横竖屏切换后自动重新校准。
+
+画面服务会自动识别 AOSP 与厂商 ROM 的 `ScreenCapture`、`ScreenCaptureInternal` 和旧版 `SurfaceControl` 接口，并按系统实际提供的接口降级，兼容 Android 16 定制系统移除 `getInternalDisplayToken()` 的情况。
 
 默认参数使用 80° 最大倾斜角度、100% 空间强度、6–32 个模糊采样和 40 ms 陀螺仪预测。为控制功耗，捕获宽度上限为 1080 像素，更新上限为每秒 30 次。
 

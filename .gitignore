@@ -3,9 +3,7 @@
 local.properties
 *.iml
 .idea/
-reference/*.java
-reference/*.log
-reference/
+/reference/
 dist/
 docs/
 release-assets/

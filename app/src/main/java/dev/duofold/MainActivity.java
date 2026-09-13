@@ -23,7 +23,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Switch;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import dev.duofold.bridge.BridgeClient;
+import dev.duofold.motion.EffectStyle;
 
 public final class MainActivity extends Activity {
     private static final int FG=0xfff0f2f7,MUTED=0xff9299a6,ACCENT=0xffbfd2ff,BG=0xff101216;
@@ -86,6 +89,32 @@ public final class MainActivity extends Activity {
         zAxis.setOnCheckedChangeListener((button,checked)->prefs.edit().putBoolean("zAxis",checked).apply());
         tuning.addView(zAxis,new LinearLayout.LayoutParams(-1,dp(52)));
         add(tuning,text("关闭：只响应左右翻转。开启：前后倾斜也会产生上/下方向的展开；斜着移动时两个方向连续合成。横竖屏会自动切换到当前界面的坐标轴，参数在下次开启时生效。",12,MUTED),8,0);
+
+        LinearLayout effects=card(body);
+        effects.addView(text("动画效果",19,FG));
+        add(effects,text("选择后立即应用，自动记住你的选择。",12,MUTED),6,10);
+        RadioGroup choices=new RadioGroup(this);
+        EffectStyle selected=EffectStyle.fromId(prefs.getString("effectStyle","classic"));
+        for(EffectStyle style:EffectStyle.values()) {
+            RadioButton choice=new RadioButton(this);
+            choice.setId(View.generateViewId());choice.setTag(style);
+            choice.setText(style.title);choice.setTextSize(14);choice.setTextColor(FG);
+            choice.setButtonTintList(android.content.res.ColorStateList.valueOf(ACCENT));
+            choice.setMinHeight(dp(48));
+            choices.addView(choice,new RadioGroup.LayoutParams(-1,-2));
+            if(style==selected)choices.check(choice.getId());
+        }
+        effects.addView(choices);
+        TextView effectDescription=text(selected.description,12,MUTED);
+        add(effects,effectDescription,8,0);
+        choices.setOnCheckedChangeListener((group,id)-> {
+            RadioButton choice=group.findViewById(id);if(choice==null)return;
+            EffectStyle style=(EffectStyle)choice.getTag();
+            prefs.edit().putString("effectStyle",style.id).apply();
+            effectDescription.setText(style.description);
+            FoldService service=FoldService.current();
+            if(service!=null)service.setEffectStyle(style);
+        });
 
         TextView authorLink=text("作者 jcx  ·  GitHub ↗",11,ACCENT);
         authorLink.setGravity(Gravity.CENTER);

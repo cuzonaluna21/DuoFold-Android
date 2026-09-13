@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 
 /** Runs only inside the Shizuku shell UserService, never inside the app process. */
 public final class CaptureBridge extends IFoldBridge.Stub {
-    private static final int NONE=0,IWM_CAPTURE=1,SURFACE_CAPTURE=2,LEGACY_SCREENSHOT=3;
+    private static final int NONE=0,IWM_CAPTURE=1,SCREEN_CAPTURE=2,SURFACE_CAPTURE=3,LEGACY_SCREENSHOT=4;
     private final HandlerThread thread=new HandlerThread("DuoCapture");
     private final Handler handler;
     private final Paint paint=new Paint(Paint.FILTER_BITMAP_FLAG);
@@ -38,6 +38,8 @@ public final class CaptureBridge extends IFoldBridge.Stub {
     private Object inputManager;
     private IBinder displayToken;
     private Method capture,createCaptureListener,getCaptureBuffer,legacyScreenshot,inject;
+    private boolean argsExclude;
+    private String iwmCaptureOwner="android.window.ScreenCapture";
     private MotionEvent lastTouch;
     private ICaptureListener listener;
     private int width,height,interval,rotation,backend;
@@ -49,11 +51,13 @@ public final class CaptureBridge extends IFoldBridge.Stub {
         Bundle result=new Bundle();result.putInt("uid",Process.myUid());
         try {
             initInput();
-            Throwable first=null;
-            try {initIwmCapture();} catch(Throwable e) {first=e;backend=NONE;}
-            if(backend==NONE)try {initSurfaceCapture();} catch(Throwable e) {if(first==null)first=e;backend=NONE;}
+            Throwable failure=null;
+            try {initIwmCapture();} catch(Throwable e) {failure=append(failure,e);backend=NONE;}
+            if(backend==NONE)try {initScreenCapture();} catch(Throwable e) {failure=append(failure,e);backend=NONE;}
+            if(backend==NONE)try {initSurfaceCapture();} catch(Throwable e) {failure=append(failure,e);backend=NONE;}
             if(backend==NONE)try {initLegacyScreenshot();} catch(Throwable e) {
-                if(first!=null)e.addSuppressed(first);throw e;
+                failure=append(failure,e);
+                throw new IllegalStateException("No compatible screen capture API: "+describeTree(failure),failure);
             }
             result.putBoolean("captureApi",true);result.putBoolean("inputApi",inject!=null);
             result.putString("backend",backendName());
@@ -75,32 +79,47 @@ public final class CaptureBridge extends IFoldBridge.Stub {
     }
 
     private void initIwmCapture() throws Exception {
-        Class<?> args=Class.forName("android.window.ScreenCapture$CaptureArgs");
-        Class<?> listenerType=Class.forName("android.window.ScreenCapture$ScreenCaptureListener");
         IBinder binder=(IBinder)Class.forName("android.os.ServiceManager").getMethod("getService",String.class)
                 .invoke(null,"window");
         windowManager=Class.forName("android.view.IWindowManager$Stub").getMethod("asInterface",IBinder.class)
                 .invoke(null,binder);
-        capture=Class.forName("android.view.IWindowManager").getMethod("captureDisplay",int.class,args,listenerType);
-        createCaptureListener=Class.forName("android.window.ScreenCapture").getMethod("createSyncCaptureListener");
-        getCaptureBuffer=Class.forName("android.window.ScreenCapture$SynchronousScreenCaptureListener")
-                .getMethod("getBuffer");
-        backend=IWM_CAPTURE;
+        Throwable failure=null;
+        for(String owner:new String[]{"android.window.ScreenCapture","android.window.ScreenCaptureInternal"}) {
+            try {
+                Class<?> api=Class.forName(owner);
+                Class<?> args=Class.forName(owner+"$CaptureArgs");
+                Class<?> listenerType=Class.forName(owner+"$ScreenCaptureListener");
+                capture=Class.forName("android.view.IWindowManager")
+                        .getMethod("captureDisplay",int.class,args,listenerType);
+                createCaptureListener=api.getMethod("createSyncCaptureListener");
+                getCaptureBuffer=Class.forName(owner+"$SynchronousScreenCaptureListener").getMethod("getBuffer");
+                iwmCaptureOwner=owner;backend=IWM_CAPTURE;return;
+            } catch(Throwable e) {failure=append(failure,e);}
+        }
+        if(failure instanceof Exception)throw (Exception)failure;
+        throw new IllegalStateException("IWindowManager capture unavailable",failure);
     }
 
     private void initSurfaceCapture() throws Exception {
         Class<?> surfaceControl=Class.forName("android.view.SurfaceControl");
-        displayToken=(IBinder)surfaceControl.getMethod("getInternalDisplayToken").invoke(null);
-        if(displayToken==null)throw new IllegalStateException("Internal display unavailable");
+        displayToken=resolveDisplayToken(surfaceControl);
         Class<?> args=Class.forName("android.view.SurfaceControl$DisplayCaptureArgs");
         capture=surfaceControl.getMethod("captureDisplay",args);
         backend=SURFACE_CAPTURE;
     }
 
+    private void initScreenCapture() throws Exception {
+        Class<?> surfaceControl=Class.forName("android.view.SurfaceControl");
+        displayToken=resolveDisplayToken(surfaceControl);
+        Class<?> screenCapture=Class.forName("android.window.ScreenCapture");
+        Class<?> args=Class.forName("android.window.ScreenCapture$DisplayCaptureArgs");
+        capture=screenCapture.getMethod("captureDisplay",args);
+        backend=SCREEN_CAPTURE;
+    }
+
     private void initLegacyScreenshot() throws Exception {
         Class<?> surfaceControl=Class.forName("android.view.SurfaceControl");
-        displayToken=(IBinder)surfaceControl.getMethod("getInternalDisplayToken").invoke(null);
-        if(displayToken==null)throw new IllegalStateException("Internal display unavailable");
+        displayToken=resolveDisplayToken(surfaceControl);
         legacyScreenshot=surfaceControl.getMethod("screenshot",IBinder.class,Surface.class,Rect.class,
                 int.class,int.class,boolean.class,int.class);
         backend=LEGACY_SCREENSHOT;
@@ -121,8 +140,13 @@ public final class CaptureBridge extends IFoldBridge.Stub {
                 interval=1000/Math.max(10,Math.min(60,options.getInt("fps",30)));
                 if(target==null||!target.isValid()||exclude==null||!exclude.isValid())
                     throw new IllegalStateException("Effect layer unavailable; refusing recursive capture.");
-                if(backend!=LEGACY_SCREENSHOT)markExcluded(exclude);
                 buildCaptureArgs(options);
+                if(backend!=LEGACY_SCREENSHOT) {
+                    try {markExcluded(exclude);}
+                    catch(Throwable markFailure) {
+                        if(!argsExclude)throw new IllegalStateException("This ROM cannot exclude the effect layer",markFailure);
+                    }
+                }
                 frames=0;error="";running=true;handler.post(frame);
             } catch(Throwable e) {fail(e);}
         });
@@ -137,25 +161,41 @@ public final class CaptureBridge extends IFoldBridge.Stub {
     }
 
     private void buildCaptureArgs(Bundle options) throws Exception {
-        captureArgs=null;
+        captureArgs=null;argsExclude=false;
         if(backend==IWM_CAPTURE) {
-            Class<?> builderClass=Class.forName("android.window.ScreenCapture$CaptureArgs$Builder");
+            Class<?> builderClass=Class.forName(iwmCaptureOwner+"$CaptureArgs$Builder");
             Object builder=builderClass.getConstructor().newInstance();
             float sx=width/(float)Math.max(1,options.getInt("displayWidth",width));
             float sy=height/(float)Math.max(1,options.getInt("displayHeight",height));
             builderClass.getMethod("setFrameScale",float.class,float.class).invoke(builder,sx,sy);
             builderClass.getMethod("setExcludeLayers",SurfaceControl[].class)
                     .invoke(builder,(Object)new SurfaceControl[]{exclude});
-            builderClass.getMethod("setCaptureSecureLayers",boolean.class).invoke(builder,false);
-            builderClass.getMethod("setAllowProtected",boolean.class).invoke(builder,false);
+            argsExclude=true;
+            configureContentPolicy(builderClass,builder);
             captureArgs=builderClass.getMethod("build").invoke(builder);
-        } else if(backend==SURFACE_CAPTURE) {
-            Class<?> builderClass=Class.forName("android.view.SurfaceControl$DisplayCaptureArgs$Builder");
+        } else if(backend==SCREEN_CAPTURE||backend==SURFACE_CAPTURE) {
+            String owner=backend==SCREEN_CAPTURE?"android.window.ScreenCapture":"android.view.SurfaceControl";
+            Class<?> builderClass=Class.forName(owner+"$DisplayCaptureArgs$Builder");
             Object builder=builderClass.getConstructor(IBinder.class).newInstance(displayToken);
             builderClass.getMethod("setSize",int.class,int.class).invoke(builder,width,height);
+            try {
+                builderClass.getMethod("setExcludeLayers",SurfaceControl[].class)
+                        .invoke(builder,(Object)new SurfaceControl[]{exclude});
+                argsExclude=true;
+            } catch(NoSuchMethodException ignored) {}
+            configureContentPolicy(builderClass,builder);
+            captureArgs=builderClass.getMethod("build").invoke(builder);
+        }
+    }
+
+    private static void configureContentPolicy(Class<?> builderClass,Object builder) throws Exception {
+        try {
             builderClass.getMethod("setCaptureSecureLayers",boolean.class).invoke(builder,false);
             builderClass.getMethod("setAllowProtected",boolean.class).invoke(builder,false);
-            captureArgs=builderClass.getMethod("build").invoke(builder);
+        } catch(NoSuchMethodException legacyApiMissing) {
+            // Newer AOSP-derived ROMs replaced the booleans with explicit redact policies.
+            builderClass.getMethod("setSecureContentPolicy",int.class).invoke(builder,0);
+            builderClass.getMethod("setProtectedContentPolicy",int.class).invoke(builder,0);
         }
     }
 
@@ -239,7 +279,9 @@ public final class CaptureBridge extends IFoldBridge.Stub {
     @Override public void destroy() {stop();handler.post(()->{thread.quitSafely();System.exit(0);});}
     private String backendName() {
         return switch(backend) {
-            case IWM_CAPTURE -> "IWindowManager";
+            case IWM_CAPTURE -> iwmCaptureOwner.endsWith("Internal")
+                    ?"IWindowManager / ScreenCaptureInternal":"IWindowManager";
+            case SCREEN_CAPTURE -> "ScreenCapture";
             case SURFACE_CAPTURE -> "SurfaceControl";
             case LEGACY_SCREENSHOT -> "SurfaceControl legacy";
             default -> "unavailable";
@@ -248,5 +290,21 @@ public final class CaptureBridge extends IFoldBridge.Stub {
     private static String describe(Throwable t) {
         while(t instanceof InvocationTargetException&&t.getCause()!=null)t=t.getCause();
         return t.getClass().getSimpleName()+": "+String.valueOf(t.getMessage());
+    }
+    private static IBinder resolveDisplayToken(Class<?> surfaceControl) throws Exception {
+        Class<?> displayControl=null;
+        try {displayControl=Class.forName("com.android.server.display.DisplayControl");}
+        catch(ClassNotFoundException ignored) {}
+        Object token=DisplayTokenResolver.resolve(surfaceControl,displayControl);
+        if(!(token instanceof IBinder))throw new IllegalStateException("Physical display token has an unexpected type");
+        return (IBinder)token;
+    }
+    private static Throwable append(Throwable root,Throwable next) {
+        if(root==null)return next;root.addSuppressed(next);return root;
+    }
+    private static String describeTree(Throwable root) {
+        StringBuilder out=new StringBuilder(describe(root));
+        for(Throwable item:root.getSuppressed())out.append(" | ").append(describe(item));
+        return out.toString();
     }
 }

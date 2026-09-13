@@ -29,6 +29,7 @@ import dev.duofold.bridge.BridgeClient;
 import dev.duofold.bridge.ICaptureListener;
 import dev.duofold.bridge.IFoldBridge;
 import dev.duofold.motion.FoldModel;
+import dev.duofold.motion.EffectStyle;
 import dev.duofold.motion.TiltSensor;
 import dev.duofold.render.FoldView;
 import java.util.concurrent.ExecutorService;
@@ -82,6 +83,7 @@ public final class FoldService extends AccessibilityService {
                 (float)Math.toRadians(forwardDegrees),(float)Math.toRadians(sideDegrees),intensity);}
     }
     public void saveDebugFrame() {if(BuildConfig.DEBUG && view!=null)view.saveDebugFrame();}
+    public void setEffectStyle(EffectStyle style) {if(view!=null)view.setEffectStyle(style);}
     public void calibrate() { if(sensor!=null) {sensor.calibrate();progress=1;view.setFold(0,0,intensity);} }
     public void startSession(boolean trial) {
         if(active) return;
@@ -127,6 +129,7 @@ public final class FoldService extends AccessibilityService {
                 if(overlayGeneration==generation) stopSession(message);
             }
         });
+        view.setEffectStyle(EffectStyle.fromId(getSharedPreferences("duo",0).getString("effectStyle","classic")));
         int flags=WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                 |WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
         WindowManager.LayoutParams lp=new WindowManager.LayoutParams(
